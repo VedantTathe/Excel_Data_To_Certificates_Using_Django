@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Text Position and Font Size</title>
+    <style>
+        #certificate-container {
+            position: relative;
+            display: inline-block;
+        }
+        #text-box {
+            position: absolute;
+            border: 2px dashed #000;
+            cursor: move;
+            resize: both;
+            overflow: hidden;
+            font-size: 30px; /* Initial font size */
+            right:0;
+            
+        }
+    </style>
+</head>
+<body>
+    {% if success %}
+        <h1>{{success}}</h1>
+        <a href="{% url 'download_pdf' excelcertifinput_id=excelcertifinput_id %}">Click here to Download PDF</a>
+    {% else %}
+
+    <h1>Select Text Position and Font Size</h1>
+    <div id="certificate-container">
+        <img id="certificate" src="{{ template_image }}" alt="Certificate Template">
+        <div id="text-box">{{first_row_name}}</div>
+    </div>
+    <br>
+    <form action="{% url 'select_text_position' %}" method="post" id="select-position-form">
+        {% csrf_token %}
+        <label for="font-size">Font Size:</label>
+        <input type="number" id="font-size" name="font_size" value="30" min="1" max="100">
+        <br><br>
+        <input type="hidden" id="xposition" name="x_position">
+        <input type="hidden" id="yposition" name="y_position">
+        <input type="hidden" id="excelcertifinput_id" name="excelcertifinput_id" value="{{ excelcertifinput_id }}">
+        <button type="button" id="save-button">Save</button>
+    </form>
+    {% endif %}
+
+    <script>
+        const textBox = document.getElementById('text-box');
+        const fontSizeInput = document.getElementById('font-size');
+        const saveButton = document.getElementById('save-button');
+        const form = document.getElementById('select-position-form');
+    
+        // Update font size based on input
+        fontSizeInput.addEventListener('input', () => {
+            textBox.style.fontSize = fontSizeInput.value + 'px';
+        });
+    
+        let offsetX, offsetY, isDragging = false, isResizing = false;
+    
+        textBox.addEventListener('mousedown', (e) => {
+            const textBoxRect = textBox.getBoundingClientRect();
+            const resizeThreshold = 10; // Pixels from the edge to consider as resizing
+    
+            // Check if the mouse is near the edge for resizing
+            if (
+                e.clientX >= textBoxRect.right - resizeThreshold &&
+                e.clientY >= textBoxRect.bottom - resizeThreshold
+            ) {
+                isResizing = true; // Set flag to true if near edge
+            } else {
+                isDragging = true; // Otherwise, set flag to true for dragging
+                offsetX = e.clientX - textBox.offsetLeft;
+                offsetY = e.clientY - textBox.offsetTop;
+            }
+        });
+    
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                // Update position of text box if dragging
+                textBox.style.left = Math.round(e.clientX - offsetX) + 'px';
+                textBox.style.top = Math.round(e.clientY - offsetY) + 'px';
+            } else if (isResizing) {
+                // Update size of text box if resizing
+                const newWidth = Math.round(e.clientX - textBox.getBoundingClientRect().left + window.scrollX);
+                const newHeight = Math.round(e.clientY - textBox.getBoundingClientRect().top + window.scrollY);
+                textBox.style.width = newWidth + 'px';
+                textBox.style.height = newHeight + 'px';
+    
+                // Update font size based on the height of the text box
+                const newFontSize = Math.round(newHeight * 0.5); // Adjust the multiplier as needed
+                textBox.style.fontSize = newFontSize + 'px';
+                fontSizeInput.value = newFontSize; // Update the input value to reflect the new font size
+            }
+        });
+    
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            isResizing = false;
+        });
+    
+        // Save button click handler
+        saveButton.addEventListener('click', () => {
+            const fontSize = Math.round(fontSizeInput.value);
+            const xPosition = Math.round(textBox.offsetLeft);
+            const yPosition = Math.round(textBox.offsetTop);
+            
+            document.getElementById('font-size').value = fontSize;
+            document.getElementById('xposition').value = xPosition;
+            document.getElementById('yposition').value = yPosition;
+            
+            form.submit();
+        });
+    </script>
+    
+</body>
+</html>
