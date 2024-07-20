@@ -1,6 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <title>Select Text Position and Font Size</title>
     <style>
         #certificate-container {
@@ -14,15 +19,17 @@
             resize: both;
             overflow: hidden;
             font-size: 30px; /* Initial font size */
-            right:0;
+            right:30%;
             
         }
     </style>
 </head>
-<body>
+<body class="bg-orange-300">
     {% if success %}
-        <h1>{{success}}</h1>
-        <a href="{% url 'download_pdf' excelcertifinput_id=excelcertifinput_id %}">Click here to Download PDF</a>
+        <div class="h-screen w-screen">
+        <h1 class="m-4 text-2xl font-medium font-bold">{{success}}</h1>
+        <a class="bg-orange-500 rounded-lg p-4 m-4" href="{% url 'download_pdf' excelcertifinput_id=excelcertifinput_id %}">Click here to Download PDF</a>
+        </div>
     {% else %}
 
     <h1>Select Text Position and Font Size</h1>
@@ -39,7 +46,7 @@
         <input type="hidden" id="xposition" name="x_position">
         <input type="hidden" id="yposition" name="y_position">
         <input type="hidden" id="excelcertifinput_id" name="excelcertifinput_id" value="{{ excelcertifinput_id }}">
-        <button type="button" id="save-button">Save</button>
+        <button type="button" id="save-button" class="bg-orange-600 rounded-2xl p-4 m-4">Save</button>
     </form>
     {% endif %}
 

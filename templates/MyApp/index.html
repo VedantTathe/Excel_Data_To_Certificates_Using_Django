@@ -7,26 +7,135 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <title>Home Page</title>
+    <style>
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 50%;
+            {% comment %} width: 150px; {% endcomment %}
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: background-color 0.3s;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+        .upload-area.dragover {
+            background-color: #e0e0e0;
+        }
+        .uploading {
+            position: absolute;
+            bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            background: url("{% static 'images/upload-arrow.gif' %}") no-repeat center center;
+            background-size: 60px 60px;
+            animation: bounce 1s infinite;
+        }
+        .uploading .text {
+            position: absolute;
+            bottom: 20px;
+            font-size: 16px;
+            color: #000;
+            z-index: 1;
+        }
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="bg-purple-400">
-        <div class="bg-purple-400">
-            <p class="text-purple-400">sample</p>
-            {% include 'MyApp/components/navbar.html' %}      
+    <div class="bg-orange-300 min-h-screen">
+        {% include 'MyApp/components/navbar.html' %}
 
-            <div class="container mx-auto mt-10">
-                <h1 class="text-2xl font-bold mb-5">Upload Certificate and Excel File</h1>
-                <form action="" method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Upload</button>
-                    {% if success %}
-                        <p class="text-red-500">{{success}}</p>
-                    {% endif %}
-                </form>
-            </div>
+        <div class="container mx-auto mt-10 pb-10">
+            <h1 class="text-2xl font-bold mb-5 text-center">Upload Certificate and Excel File</h1>
+            {% if success %}
+            <p class="text-red-500">{{ success }}</p>
+        {% endif %}
+            <form action="" method="post" enctype="multipart/form-data" class="flex flex-col items-center space-y-4">
+                {% csrf_token %}
+                <div class="lg:flex justify-between w-full max-w-4xl">
+                    <div class="flex-1 flex flex-col items-center">
+                        <label for="certificateimg" class="block mb-2 font-medium">Upload Certificate Image</label>
+                        <div id="certificateimg-upload" class="w-9/12 flex-col upload-area">
+                            <span>Drag & Drop</span>
+                            <span class="md:ml-14">{{ form.certificateimg }}</span>
+                            <div class="uploading">
+                                <div class="text font-medium font-bold text-2xl">↑</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center">
+                        <label for="studentname" class="block mb-2 font-medium">Column Name</label>
+                        {{ form.column_name }}
+                    </div>
+                    <div class="flex-1 flex flex-col items-center">
+                        <label for="excelfile" class="block mb-2 font-medium">Upload Excel File</label>
+                        <div id="excelfile-upload" class="w-9/12 flex-col upload-area">
+                            <span>Drag & Drop</span>
+                            <span class="md:ml-14">{{ form.excelfile }}</span>
+                            <div class="uploading">
+                                <div class="text font-medium font-bold text-2xl">↑</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="bg-orange-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Upload</button>
+               
+            </form>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadAreas = document.querySelectorAll('.upload-area');
+
+            uploadAreas.forEach(area => {
+                const input = area.querySelector('input[type="file"]');
+                const uploading = area.querySelector('.uploading');
+
+                area.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    area.classList.add('dragover');
+                });
+
+                area.addEventListener('dragleave', () => {
+                    area.classList.remove('dragover');
+                });
+
+                area.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    area.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length) {
+                        input.files = files;
+                        {% comment %} area.querySelector('span').textContent = files[0].name; {% endcomment %}
+                        uploading.style.display = 'flex';
+                    }
+                });
+
+                area.addEventListener('click', () => {
+                    input.click();
+                });
+
+                input.addEventListener('change', () => {
+                    if (input.files.length) {
+                        {% comment %} area.querySelector('span').textContent = input.files[0].name; {% endcomment %}
+                        uploading.style.display = 'flex';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
